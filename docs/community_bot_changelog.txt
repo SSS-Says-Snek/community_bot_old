@@ -1,1 +1,16 @@
 
+----------------------------------------------------- DISCORD BOT CHANGELOGS -------------------------------------------
+v0.4.0 will include:
+- Different client owned by Mr. Code
+- maybe Beta Mode?
+- NEW commands
+- FIX'D commands
+- Deprecated BfbCogs.py, which will turn into ExtraFunCommands.py
+- Tiny Bug Fixes, which includes:
+    - Proper TimeOut support
+
+v0.4.1 will include:
+- COMPLETELY reworked $help commands, which includes:
+    - Proper Help Text when examined further
+    - Add Help for Categories
+- Performance Enhancement
