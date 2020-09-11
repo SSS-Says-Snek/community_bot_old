@@ -53,6 +53,6 @@ bot.load_extension('cogs.BuiltInCogs')
 
 # NOTE: runs this program. VERY IMPORTANT FOR MEEEE.
 # UPDATE: If possible, will deprecate this and switch to Brandon Owned Bot
-# bot.run('NzE5MTk1ODQ2MjYwMDMxNTM5.Xv-9eQ.xIPU-AdK5U-zfW_v_wQ-SrIztoY') # NOTE Aidan's BOT
+# bot.run('OLD TOKEN') # NOTE Aidan's BOT
 
 bot.run('YOUR TOKEN HERE')
