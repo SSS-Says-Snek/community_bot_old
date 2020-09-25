@@ -1,20 +1,24 @@
 import discord
 from discord.ext import commands
+import time
+import random
+
 
 class ExtraCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
+    # FIXME: When importing the cog, this won't load because "something...."
     @commands.command(pass_context=True)
     @commands.has_permissions(add_reactions=True, embed_links=True)
-    async def advancedhelp(self, ctx, *cog):
+    async def advanced_help(self, ctx, *cog):
         """- Gets all cogs and commands of mine."""
         try:
             if not cog:
                 """Cog listing.  What more?"""
                 halp = discord.Embed(title='Cog Listing and Uncatergorized Commands',
-                                     description='Use `$help *cog*` to find out more about them!\n(By the way, the Cog Name Must Be in Title Case, Just Like this Sentence.)')
+                                     description='Use `$help *cog*` to find out more about them!\n(By The Way, The Cog Name Must Be in Title Case, Just Like this Sentence.)')
                 cogs_desc = ''
                 for x in self.bot.cogs:
                     cogs_desc += ('{} - {}'.format(x, self.bot.cogs[x].__doc__) + '\n')
@@ -55,41 +59,38 @@ class ExtraCommands(commands.Cog):
             await ctx.send("Excuse me, I can't send embeds.")
 
     @commands.command()
-    @commands.command()
     @commands.has_any_role('MODERATOR', 'Trusted', 'Co-manager', 'Administrator', 'CEO')
-    async def draw(self, ctx):
+    async def old_draw(self, ctx):
         """- old draw version that draws a person for #random-draw"""
-        if not shutdown:
-            people_enter = ['Brandon Cui', 'Aidan Cui', 'Jason Murong', 'Daniel Collins', 'Daniel Murong', 'Zombix',
-                            'FluffyDuck01', 'Lucas Joiner', 'Grayson Bou', 'Anna An']
-            rand_reward = ['access to a secret category', 'a random role', 'Discord Dungeons Money',
-                           'Villager Bot Money', 'the ability to be immune to slowmode (temporary)',
-                           'owner of the server for ? hours', 'Myuu PKC']
-            actual_rand_reward = random.randint(1, len(rand_reward))
-            lucky_person = random.randint(1, len(people_enter))
-            index_person = 1
-            index_reward = 1
+        people_enter = ['Brandon Cui', 'Aidan Cui', 'Jason Murong', 'Daniel Collins', 'Daniel Murong', 'Zombix',
+                        'FluffyDuck01', 'Lucas Joiner', 'Grayson Bou', 'Anna An']
+        rand_reward = ['access to a secret category', 'a random role', 'Discord Dungeons Money',
+                        'Villager Bot Money', 'the ability to be immune to slowmode (temporary)',
+                        'owner of the server for ? hours', 'Myuu PKC']
+        actual_rand_reward = random.randint(1, len(rand_reward))
+        lucky_person = random.randint(1, len(people_enter))
+        index_person = 1
+        index_reward = 1
 
-            time.sleep(0.7)
-            await ctx.channel.purge(limit=1)
-            time.sleep(0.3)
-            for person in people_enter:
-                if lucky_person == index_person:
-                    await ctx.send(f"\nThe lucky winner is {person}!")
-                    time.sleep(0.8)
-                    await ctx.send("Choosing random reward...")
-                    time.sleep(random.randint(1, 3))
-                    for reward in rand_reward:
-                        if actual_rand_reward == index_reward:
-                            await ctx.send(f"{person} won {reward.lower()}!")
-                            break
-                        else:
-                            index_reward += 1
+        time.sleep(0.7)
+        await ctx.channel.purge(limit=1)
+        time.sleep(0.3)
+        for person in people_enter:
+            if lucky_person == index_person:
+                await ctx.send(f"\nThe lucky winner is {person}!")
+                time.sleep(0.8)
+                await ctx.send("Choosing random reward...")
+                time.sleep(random.randint(1, 3))
+                for reward in rand_reward:
+                    if actual_rand_reward == index_reward:
+                        await ctx.send(f"{person} won {reward.lower()}!")
+                        break
+                    else:
+                        index_reward += 1
                     break
                 else:
                     index_person += 1
-        else:
-            await ctx.send(bot_shutdown_message)
+
 
 # NOTE: IMPORTANT
 def setup(bot):

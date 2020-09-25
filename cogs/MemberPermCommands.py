@@ -13,9 +13,8 @@ class MemberPermissionCommands(commands.Cog):
             return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
         return commands.check(predicate)
 
-    @commands.command()
+    @commands.command(help='COMING SOON!', brief='- bans someone')
     async def ban(self, ctx, member: discord.Member, *, reason=None):
-        """- bans someone"""
         roles = ctx.author.roles
         roles.reverse()
         top_role = roles[0]
@@ -26,10 +25,9 @@ class MemberPermissionCommands(commands.Cog):
             banned_user = self.bot.get_user(member.id)
             await banned_user.send(f"Oh No! {ctx.author.mention} has banned you for {reason}!")
 
-    @commands.command()
+    @commands.command(help='COMING SOON!', brief='- unbans someone')
     @commands.has_role(695312034627059763)# this role is MODERATOR
     async def unban(self, ctx, *, member):
-        """- unbans someone """
         banned_users = await ctx.guild.bans()
         member_name, member_discriminator = member.split('#')
 
@@ -41,10 +39,9 @@ class MemberPermissionCommands(commands.Cog):
                 await ctx.send(f"Unbanned {user.mention}")
                 return
 
-    @commands.command()
+    @commands.command(help='COMING SOON!', brief='- kicks someone')
     @is_guild_owner()
     async def kick(self, ctx, member: discord.Member, *, reason=None):
-        """- kicks someone"""
         await member.ban(reason=reason)
         await ctx.send(f"kicked {member.mention} for {reason}")
 
@@ -54,7 +51,7 @@ class MemberPermissionCommands(commands.Cog):
         time.sleep(0.4)
         await user.add_roles(role)
 
-    @commands.command()
+    @commands.command(help='COMING SOON!', brief='- bans someone using BANNED role. Good for brief punishments')
     @commands.has_role(695312034627059763)# this role is MODERATOR
     async def banrole(self, ctx, user: discord.Member):
         await ctx.send(f"Attempting to ban {user.mention}...")
@@ -68,6 +65,19 @@ class MemberPermissionCommands(commands.Cog):
                 pass
         BANNED_role = discord.utils.get(ctx.author.guild.roles, name="BANNED")
         await user.add_roles(BANNED_role)
+
+    @commands.command(help='COMING SOON!', brief='- messages a user from the server. Good for escaping bans')
+    @commands.has_any_role('MODERATOR', 'Trusted', 'Co-manager', 'Administrator', 'CEO')
+    async def message_user(self, ctx, user: discord.Member, *, message):
+        person_to_message = self.bot.get_user(user.id)
+        author = self.bot.get_user(ctx.author.id)
+        try:
+            await person_to_message.send(f"--------------- **`INCOMING MESSAGE`** from {ctx.author.name} ---------------")
+            await person_to_message(message)
+        except:
+            await author.send(f"**`ERROR 002:`** Failed to send message to {person_to_message.name}")
+        else:
+            await author.send(f"**`SUCCESS:`** Successfully sent message to {person_to_message.name}")
 
     @giverole.error
     async def giverole_handler(self, ctx, error):

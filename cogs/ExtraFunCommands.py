@@ -10,6 +10,7 @@ class ExtraFunCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    # FIXME: Finish this code (for Daniel!)
     @commands.command(help='COMING SOON!', brief='- DMS a list of all BFB characters')
     async def bfbcharacters(self, ctx):
         """- DMs a list of all BFB characters"""
@@ -27,10 +28,10 @@ class ExtraFunCommands(commands.Cog):
                 Returns a dictionary with three keys:
                 "success": a boolean indicating whether or not the API request was successful
 
-                "error": `None` if no error occured, otherwise a string containing
+                "error": `None` if no error occurred, otherwise a string containing
                         an error message if the API could not be reached or
                         speech was unrecognizable
-                "transcription": `None` if speech could not be ttranscribed,
+                "transcription": `None` if speech could not be transcribed,
                         otherwise a string containing the transcribed text
                 """
 
@@ -82,12 +83,12 @@ class ExtraFunCommands(commands.Cog):
         time.sleep(3)
 
         for i in range(NUM_GUESSES):
-            # get guess from youser
+            # get guess from user
             # if transcription is return, break loop and continue
             # if no transcription and API says No U, break and continue
             # if API request succeed but no transcription,
             # reprompt user to say guess again. Do this up to PROMPT_LIMIT times
-            for j in range(PROMPT_LIMIT):
+            for _ in range(PROMPT_LIMIT):
                 await ctx.send(f"Guess {i + 1}. Speak!")
                 guess = await recognize_speech_from_mic(recognizer, microphone)
                 if guess["transcription"]:
@@ -100,19 +101,22 @@ class ExtraFunCommands(commands.Cog):
                 await ctx.send("**`ERROR ???:`** {}".format(guess["error"]))
                 break
 
-            await ctx.send("You said: {}".format(guess["transcription"]))
+            await ctx.send(f"You said: **`{guess['transcription']}`**")
 
             guess_is_correct = guess["transcription"].lower() == word.lower()
             user_has_more_attempts = i < NUM_GUESSES - 1
 
-            if guess_is_correct:
-                await ctx.send("**`CORRECT!!`** You win!".format(word))
-                break
-            elif user_has_more_attempts:
-                await ctx.send("**`Incorrect.`** Try again.\n")
+            if guess["transcription"].lower() in WORDS:
+                if guess_is_correct:
+                    await ctx.send("**`CORRECT!!`** You win!".format(word))
+                    break
+                elif user_has_more_attempts:
+                    await ctx.send("**`Incorrect.`** Try again.\n")
+                else:
+                    await ctx.send(f"Sorry, you ***_`LOSE!`_***\nI was thinking of {word}")
+                    break
             else:
-                await ctx.send(f"Sorry, you ***_`lose!`_***\nI was thinking of {word}")
-                break
+                await ctx.send(f"**`{guess['transcription']}`** is not in **`AVAILABLE WORDS`**. Try again!")
 
 
 def setup(bot):
