@@ -1,0 +1,40 @@
+This is a documentation about BuiltInCogs.py. Because BuiltInCogs is builtin, this will never be finished (unless I stop working on it)
+Also, I will try to use the same format Python uses to define THEIR module, but I usually do not know what the doc is even talking about.
+Without further ado, here is the BuiltInCogs doc!
+
+HELP ON BUILT IN MODULE BuiltInCogs:
+
+NAME
+    BuiltInCogs
+
+DESCRIPTION
+    BuiltInCogs.py is the Built In Cog, as seen above. It is automatically loaded when you run community_bot.py.
+    Without it, the bot would be severely crippled, and there would be no functionality.
+    BuiltInCogs.py is made up of FIVE different classes, which are:
+        - DebugAndEvents. This class contains all the events for the bot, as well as some commands to debug the bot.
+        - OwnerOnly. This class can only be used by the server/guild owner. Pretty self-explanatory.
+        - FunCommands. This class is mostly used by P E A S E N T S, which contains several fun commands.
+        - Math. This class contains some basic arithmetic operations, and if you want more cmds, import MoreMathCommands.
+        - ModeratorCommands. This class contains some very useful commands for the moderators of your discord server.
+        - MiscellaneousCommands. This class contains miscellaneous commands. WOW!
+
+CLASSES
+    NOT AVAILABLE.
+
+    class DebugAndEvents:
+        COMING SOON!
+
+    class OwnerOnly:
+        COMING SOON!
+
+    class FunCommands:
+        COMING SOON!
+
+    class Math:
+        COMING SOON!
+
+    class ModeratorCommands:
+        COMING SOON!
+
+    class MiscellaneousCommands:
+        COMING SOON!
