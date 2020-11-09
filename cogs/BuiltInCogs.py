@@ -1,4 +1,18 @@
 # NOTE: BuiltInCogs.py is the Built In Cog. Pretty self-explanatory.
+"""
+BuiltInCogs.py is the Built In Cog, as seen above. It is automatically loaded when you run community_bot.py.
+Without it, the bot would be severely crippled, and there would be no functionality.
+BuiltInCogs.py is made up of FIVE different classes, which are:
+    - DebugAndEvents. This class contains all the events for the bot, as well as some commands to debug the bot.
+    - OwnerOnly. This class can only be used by the server/guild owner. Pretty self-explanatory.
+    - FunCommands. This  class is mostly used by P E A S E N T S, which contains several fun commands.
+    - Math. This class contains some basic arithmetic operations, and if you want more cmds, import MoreMathCommands.
+    - ModeratorCommands. This class contains some very useful commands for the moderators of your discord server.
+    - MiscellaneousCommands. This class contains miscellaneous commands. WOW!
+
+I won't go into details about this, because then it would be way too long, to find out more, go to BuiltInCogs_doc.txt.
+
+"""
 
 import random
 import time
@@ -8,6 +22,9 @@ import asyncio
 from configparser import ConfigParser
 import datetime
 import logging
+import json
+from threading import Thread
+
 from playsound import playsound
 import sys
 
@@ -16,7 +33,8 @@ import discord
 
 logging.basicConfig(level=logging.WARNING)
 configure = ConfigParser()
-configure.read('community_bot_info.txt')
+configure.read(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community '
+               r'Bot\cogs\community_bot_info.ini')
 
 # NOTE: BELOW ARE SOME KEY BOOLEANS
 debug = True
@@ -34,14 +52,25 @@ no_help_simple_message = "This command does not have a complete help message for
                          "too simple, and there will be too much work to implement a full help command.\nTWO: The " \
                          "message is too similar to another help command, so we are just too lazy to add " \
                          "them.\nTHREE: The message's help command will be implemented, but not right now. "
-version = 'v0.5.0.b1'
+version = 'v0.5.0.b2'
+
 
 # NOTE: BELOW ARE SOME KEY INTEGER VALUES
 
 # TODO: Make all commands following beta mode patterns
-# FIXME Make all commands that message someone have a `except Exception as e` block
+# FIXME Make all commands that message someone has a `except Exception as e` block
+# TODO: Make all help commands have f""" instead of f""
 
-# UPDATE: 0.5.0 will include... too much things to list (see community_bot_changelog.txt)
+# UPDATE: 0.5.0 will include... too many things to list (see community_bot_changelog.txt)
+
+def is_guild_owner():
+    """finds the guild owner of the server"""
+
+    def predicate(ctx):
+        """actually returns if the message author, and the guild owner are the same"""
+        return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+
+    return commands.check(predicate)
 
 
 class DebugAndEvents(commands.Cog):
@@ -49,23 +78,28 @@ class DebugAndEvents(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_guild_owner():
-        """finds the guild owner of the server"""
-
-        def predicate(ctx):
-            return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
-
-        return commands.check(predicate)
-
     @commands.Cog.listener()
-    async def on_member_join(self):
-        pass
+    async def on_member_join(self, member):
+        # IDEA: Actually fill this in and give the joiner a custom greeting
+        with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json',
+                  'r') as read_json_file:
+            deserialized_infractions = json.load(read_json_file)
+
+        temp_dict_of_member_and_no_infraction = {str(member.id): 0}
+        deserialized_infractions.update(temp_dict_of_member_and_no_infraction)
+
+        with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json',
+                  'w') as write_json_file:
+            json.dump(deserialized_infractions, write_json_file)
+
+        read_json_file.close()
+        write_json_file.close()
 
     @commands.Cog.listener()
     async def on_ready(self):
 
-        playsound(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Misc things for Community "
-                  r"Bot\Notif Sound 1.mp3")
+        playsound(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\Misc things for "
+                  r"Community Bot\Notif Sound 1.mp3")
 
         if beta_mode and shutdown:
             await self.bot.change_presence(status=discord.Status.do_not_disturb, activity=discord.Game('Massive '
@@ -75,10 +109,10 @@ class DebugAndEvents(commands.Cog):
         elif beta_mode and not shutdown:
             await self.bot.change_presence(status=discord.Status.idle, activity=discord.Game('In BETA MODE'))
         elif not beta_mode and not shutdown:
-            await self.bot.change_presence(status=discord.Status.online, activity=discord.Game('Coding with Brandon'))
-
+            await self.bot.change_presence(status=discord.Status.online, activity=discord.Game('with Brandon. Duh'))
+            # NOTE: In the morning, check if the above code actually works
         if not shutdown:
-            print('The discord bot is now online')
+            print(f'The discord bot is now online')
         else:
             print('The discord bot is now online, but it is shutdown')
 
@@ -113,6 +147,104 @@ class DebugAndEvents(commands.Cog):
         else:
             print('Shutdown is set to True. No one can use the commands.')
 
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        # IDEA: Continue to fill this to censor words
+        if message.author.id == 753295703077421066:
+            return
+
+        forbidden_words = ['fuck', 'bitch', 'ass', 'shit', 'gabe itch']  # NOTE: Don't mean it sorry!
+        test_forbidden_words = ['cheese', 'yum']  # NOTE: Don't like saying them? Use the tests!
+        for forbidden_word in forbidden_words:
+            if forbidden_word in message.content and 'nsfw' not in str(message.channel).strip():
+                await message.delete()
+                brandon = self.bot.get_user(683852333293109269)
+                author = self.bot.get_user(message.author.id)
+                time_of_profanity = datetime.datetime.fromtimestamp(time.time()).strftime('%a %b %d %Y, %I:%M:%S %p')
+                # NOTE: Make it actually able to write stuff
+
+                with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'r') as read_json_file:
+                    deserialized_infractions = json.load(read_json_file)
+
+                if not deserialized_infractions:
+                    dict_of_writing_to_json = {}
+
+                    for member in message.guild.members:
+                        member_id = str(member.id)
+                        temp_dict_of_member_id_and_no_infraction = {member_id: 0}
+                        dict_of_writing_to_json.update(temp_dict_of_member_id_and_no_infraction)
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'w') as write_json_file:
+                        json.dump(dict_of_writing_to_json, write_json_file, indent=4)
+
+                    write_json_file.close()
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'r') as read_json_file:
+                        deserialized_infractions_refresh = json.load(read_json_file)
+
+                    await author.send('You have 1 infraction')
+                    deserialized_infractions_refresh[str(message.author.id)] += 1
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'w') as write_json_file:
+                        json.dump(deserialized_infractions_refresh, write_json_file, indent=4)
+                    read_json_file.close()
+
+                else:
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'r') as read_json_file:
+                        deserialized_infractions = json.load(read_json_file)
+
+                    deserialized_infractions[str(message.author.id)] += 1
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'w') as write_json_file:
+                        json.dump(deserialized_infractions, write_json_file, indent=4)
+
+                    write_json_file.close()
+
+                    with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json', 'r') as read_json_file:
+                        deserialized_infractions = json.load(read_json_file)
+
+                    num_infractions = deserialized_infractions[str(message.author.id)]
+                    await author.send(f"You have {num_infractions} infractions.")
+
+                    read_json_file.close()
+
+                with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\infractions.json',
+                          'r') as read_json_file:
+                    deserialized_infractions = json.load(read_json_file)
+
+                num_infractions = deserialized_infractions[str(message.author.id)]
+
+                await author.send(f"**`ALERT:`** The moderator team has been informed that on **`{time_of_profanity}`**"
+                                  f", you have used a forbidden word. You have violated Rule **`1`** and Rule **`9`**"
+                                  f" of Article I, and this will not be tolerated. Your punishment will be put under"
+                                  f" consideration. The minimal punishment is to get muted for 5 minutes,"
+                                  f" but your roles will be returned. This is rather serious, and if this continues,"
+                                  f" the consequences will be more severe. In the future, please refrain from using"
+                                  f" profanity.\nBest Regards,\n\t- The Mod team\n"
+                                  f"{discord_hyphen_separator} **`INFO`** {discord_hyphen_separator}\n"
+                                  f"Forbidden word used: **`{forbidden_word}`**\n"
+                                  f"Date of profanity: **`{time_of_profanity}`**\n"
+                                  f"Channel of used profanity: **`{str(message.channel).strip()}`**\n"
+                                  f"Number of infractions: **`{num_infractions}`**")
+                await brandon.send(f"**`WARNING 004:`** {message.author} has used a forbidden word! **`WORD:`** "
+                                   f"{forbidden_word}")
+
+                read_json_file.close()
+
+
+                # NOTE: Do this in the morning, mostly because then I have Wi-Fi
+
+                """str_to_be_placed_in_ini = '{'
+                for member in message.guild.members:
+                    str_to_be_placed_in_ini += member.id
+                dict_of_user_infractions_STR_version = configure.get('User Info', 'infractions_dictionary')
+                user_infractions_dict = json.loads(dict_of_user_infractions_STR_version.strip())
+                num_infractions_of_user = user_infractions_dict[str(message.author.id)]
+                configure['User Info']['infractions_dictionary'] = '{dfsf}'
+                with open('community_bot_info.ini', 'w') as configfile:
+                    configure.write(configfile)"""
+
     @commands.command(help=f"{discord_hyphen_separator} PING {discord_hyphen_separator}\n"
                            f"The ping command is used to debug if the bot is acting slow."
                            f"It is measured in milliseconds, and anything above 100 is severe to critical"
@@ -125,8 +257,12 @@ class DebugAndEvents(commands.Cog):
     async def ping(self, ctx):
         role = discord.utils.find(lambda r: r.name == 'Trusted', ctx.guild.roles)
         roles = ctx.author.roles
+        bot_latency = self.bot.latency * 1000
         if not shutdown and not beta_mode:
-            await ctx.send(f"Pong! Bot reaction time: {round(self.bot.latency * 1000)} milliseconds")
+            if bot_latency >= 100:
+                await ctx.send(f"**`WARNING 004:`** Pong! Bot reaction time: {round(bot_latency)} milliseconds")
+            else:
+                await ctx.send(f"Pong! Bot reaction time: {round(bot_latency)} milliseconds")
         else:
             if shutdown and not beta_mode:
                 await ctx.send(bot_shutdown_message)
@@ -151,6 +287,7 @@ class DebugAndEvents(commands.Cog):
             author_dm = self.bot.get_user(ctx.author.id)
             await author_dm.send('-------------------------------------------------------- **`ALL ERRORS:`** '
                                  '--------------------------------------------------------')
+            await author_dm.send('**`ALERT:`** Just to notify that you have an important message')
             await author_dm.send('**`ERROR 001:`** for bot shutdown messages')
             await author_dm.send('**`ERROR 002:`** Failure to send messages')
             await author_dm.send('**`ERROR 003:`** Irregular usage of $emergency_lockdown')
@@ -164,6 +301,8 @@ class DebugAndEvents(commands.Cog):
             await author_dm.send('**`WARNING 001:`** Irregular usage of $draw')
             await author_dm.send('**`WARNING 002:`** Notification when Member uses $emergency_lockdown')
             await author_dm.send('**`WARNING 003:`** Author used Incomplete Commands')
+            await author_dm.send('**`WARNING 004:`** Bot latency too high')
+            await author_dm.send('**`WARNING 005:`** Someone has used a forbidden word')
             time.sleep(0.7)
             # SEPARATOR BETWEEN WARNINGS AND PYTHON ERRORS
             await author_dm.send('**`PYTHONERROR 1431:`** Speech Recognition Errors')
@@ -171,7 +310,7 @@ class DebugAndEvents(commands.Cog):
     @commands.command(help=no_help_error_message, brief="- used for setting debug to True or False")
     @commands.has_any_role('MODERATOR', 'Trusted', 'Co-manager', 'Administrator', 'CEO')
     async def set_debug(self, ctx, boolean):
-        # FIXME: Not working. Please fix
+        # FIXME: Not working. Please fix.
         global debug, going_to_run_debug
         role = discord.utils.find(lambda r: r.name == 'Trusted', ctx.guild.roles)
         roles = ctx.author.roles
@@ -182,7 +321,6 @@ class DebugAndEvents(commands.Cog):
                 debug = True
                 going_to_run_debug = True
                 await ctx.send('Set debug to True')
-                # await ctx.send('Oh No! The bot developer has restricted this command!')
             elif boolean.lower() == 'false':
                 # configure.set('debug info' ,'debug', False) <-- not in use
                 time.sleep(1)
@@ -240,8 +378,8 @@ class DebugAndEvents(commands.Cog):
     @is_guild_owner()
     async def test_remove_role_thingy(self, ctx):
         if not shutdown and not beta_mode:
-            roles = ctx.author.roles  # list of roles, lowest role first
-            roles.reverse()  # list of roles, highest role first
+            roles = ctx.author.roles  # list of roles, the lowest role starts first
+            roles.reverse()  # makes roles list reverse to display the highest roles first
             top_role = roles[0]  # first entry of list
             await ctx.author.remove_roles(top_role)
             await ctx.send('top role removed')
@@ -257,14 +395,6 @@ class OwnerOnly(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_guild_owner():
-        """finds the guild owner of the server"""
-
-        def predicate(ctx):
-            return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
-
-        return commands.check(predicate)
-
     @commands.command(help=f"{discord_hyphen_separator} DRAW {discord_hyphen_separator}\n"
                            f"The draw command is used to draw a random person out of all the members of the guild"
                            f"This is usually used for a reward draw, and can only be used by the Guild Owner."
@@ -277,7 +407,7 @@ class OwnerOnly(commands.Cog):
                            f"(winner) won (random reward)!", brief='- draws a person for #random-draw')
     @is_guild_owner()
     async def draw(self, ctx):
-        # FIXME: Fix it so that the bots can't win. I KNOW HOW TO. JUST TOO LAZY
+        # FIXME: Fix it so that the bots can't win. I KNOW HOW TO. JUST TOO LAZY.
         # NOTE: IF I SEE ONE PERSON USING THIS...
         role = discord.utils.find(lambda r: r.name == 'Trusted', ctx.guild.roles)
         roles = ctx.author.roles
@@ -292,11 +422,11 @@ class OwnerOnly(commands.Cog):
             await ctx.send('Drawing...')
             print(f"WARNING 0001: {ctx.author} has drawn a person! Did you allow them?")
             time.sleep(1.3)
-            await ctx.send(f"The lucky winner is {people_choice.mention}!")
+            await ctx.send(f"The lucky winner is {people_choice}!")
             time.sleep(0.8)
             await ctx.send("Choosing random reward...")
             time.sleep(random.randint(1, 3))
-            await ctx.send(f"{people_choice.mention} won {reward_choice}!")
+            await ctx.send(f"{people_choice} won {reward_choice}!")
         if not shutdown and beta_mode:
             await ctx.send(f" **`ERROR 0001:`** {bot_shutdown_message}")
         else:
@@ -311,11 +441,11 @@ class OwnerOnly(commands.Cog):
                 await ctx.send('Drawing...')
                 print(f"WARNING 0001: {ctx.author} has drawn a person! Did you allow them?")
                 time.sleep(1.3)
-                await ctx.send(f"The lucky winner is {people_choice.mention}!")
+                await ctx.send(f"The lucky winner is {people_choice}!")
                 time.sleep(0.8)
                 await ctx.send("Choosing random reward...")
                 time.sleep(random.randint(1, 3))
-                await ctx.send(f"{people_choice.mention} won {reward_choice}!")
+                await ctx.send(f"{people_choice} won {reward_choice}!")
             else:
                 await ctx.send(beta_testing_message)
 
@@ -452,8 +582,15 @@ class FunCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(aliases=['8ball', 'eightball'], help='COMING SOON!', brief='- fun command that possesses the '
-                                                                                 'power of 8')
+    @commands.command(aliases=['8ball', 'eightball'],
+                      help=f"{discord_hyphen_separator} 8BALL {discord_hyphen_separator}\n"
+                           f"This fun command is used to pick a random answer for your question you asked."
+                           f"It will answer either yes, no, or maybe (it chooses yes the most)\n"
+                           f"P.S I don't like people who uses this command.\n"
+                           f"{discord_hyphen_separator} EXAMPLE {discord_hyphen_separator}\n"
+                           f"**`INPUT:`** $8ball (question)\n"
+                           f"**`OUTPUT:`** Question:(question). Answer:(answer)",
+                      brief='- fun command that possesses the power of 8')
     async def _8ball(self, ctx, *, question):
         """- fun command that possesses the power of 8"""
         if not shutdown:
@@ -473,45 +610,59 @@ class FunCommands(commands.Cog):
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(aliases=['roll'], help='COMING SOON!', brief='- fun command that rolls a dice for you')
+    @commands.command(aliases=['roll'], help='rolls a dice. Very simple.', brief='- fun command that rolls a dice for '
+                                                                                 'you')
     async def dice(self, ctx):
         if not shutdown:
             await ctx.send(f"You get {random.randint(1, 6)}.")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- fu')
+    @commands.command(help=no_help_simple_message, brief='- fun command that chooses a random number you specify')
     async def randnum(self, ctx, a: int, b: int):
-        """- fun command that chooses a random number you specify"""
         if not shutdown:
             await ctx.send(f"The random number is {random.randint(a, b)}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- fun command that chooses outcomes that you specify')
+    @commands.command(help=no_help_simple_message, brief='- fun command that chooses outcomes that you specify')
     async def choice(self, ctx, *choices):
         if not shutdown:
             await ctx.send(f"The random outcome is {random.choice(choices)}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- fun command that flips a coin')
+    @commands.command(help="Flips a coin. It's that easy.", brief='- fun command that flips a coin')
     async def coinflip(self, ctx):
         if not shutdown:
             await ctx.send('Flipping a coin...')
             flip_side = random.randint(0, 1)
             if flip_side == 0:
                 await ctx.send('It is...')
-                time.sleep(random.random)
+                time.sleep(random.random())
                 await ctx.send('Heads!')
             else:
                 await ctx.send('It is...')
-                time.sleep(random.random)
+                time.sleep(random.random())
                 await ctx.send('Tails!')
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- fun guessing game')
+    @commands.command(help=f"{discord_hyphen_separator} GUESS {discord_hyphen_separator}\n"
+                           f"This command lets you play a fun, but boring guessing game. "
+                           f"Just guess the number, and you WIN! A downside is that this is SO outdated, that"
+                           f"the developer doesn't even want to update it."
+                           f"Feel free to contact me if you want more game  stuff!\n"
+                           f"{discord_hyphen_separator} EXAMPLE {discord_hyphen_separator}\n"
+                           f"**`INPUT:`** $guess\n"
+                           f"**`OUTPUT:`**\n"
+                           f"Bot: I am guessing a number between 1 and 10. What number is it?\n"
+                           f"You: (chooses number)\n"
+                           f"IF take > 5 seconds, abort command.\n"
+                           f"ELSE, (check if answer is right)\n"
+                           f"IF (answer is right), Bot say: You are right!\n"
+                           f"IF (answer is wrong), Bot say: You is the worst at guessing. It is actually (number).",
+                      brief='- fun guessing game')
     async def guess(self, ctx):
         # IDEA: Add extra guesses.
         def is_correct(author_check):
@@ -534,49 +685,49 @@ class Math(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(help='COMING SOON!', brief='- adds. Pretty self-explanatory')
+    @commands.command(help=no_help_simple_message, brief='- adds. Pretty self-explanatory')
     async def add(self, ctx, x: int, y: int):
         if not shutdown:
             await ctx.send(f"The sum of {x} and {y} is {x + y}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- subtracts. Pretty self-explanatory')
+    @commands.command(help=no_help_simple_message, brief='- subtracts. Pretty self-explanatory')
     async def subtract(self, ctx, x: int, y: int):
         if not shutdown:
             await ctx.send(f"The difference of {x} and {y} is {x - y}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- multiplies. Pretty self-explanatory')
+    @commands.command(help=no_help_simple_message, brief='- multiplies. Pretty self-explanatory')
     async def multiply(self, ctx, x: int, y: int):
         if not shutdown:
             await ctx.send(f"The product of {x} and {y} is {x * y}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- divides. Pretty self-explanatory')
+    @commands.command(help=no_help_simple_message, brief='- divides. Pretty self-explanatory')
     async def divide(self, ctx, x: int, y: int):
         if not shutdown:
             await ctx.send(f"The quotient of {x} and {y} is {x / y}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- takes the exponents of x and y')
+    @commands.command(help=no_help_simple_message, brief='- takes the exponents of x and y')
     async def exponent(self, ctx, x: int, y: int):
         if not shutdown:
             await ctx.send(f"The exponent of {x} and {y} is {x ** y}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- takes the square root of x')
+    @commands.command(help=no_help_simple_message, brief='- takes the square root of x')
     async def sqrt(self, ctx, x: int):
         if not shutdown:
             await ctx.send(f"The square root of {x} is about {round(m.sqrt(x), 3)}")
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- takes the square of x')
+    @commands.command(help=no_help_simple_message, brief='- takes the square of x')
     async def square(self, ctx, x: int):
         if not shutdown:
             await ctx.send(f"The square of {x} is about {x ** 2}")
@@ -594,17 +745,23 @@ class ModeratorCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_guild_owner():
-        """finds the guild owner of the server"""
-
-        def predicate(ctx):
-            return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
-
-        return commands.check(predicate)
-
-    @commands.command(help='COMING SOON!',
+    @commands.command(help=f"{discord_hyphen_separator} EMERGENCY_LOCKDOWN {discord_hyphen_separator}\n"
+                           f"This command is made so that the moderators can handle discord raids."
+                           f"This works by getting everyone in the server, removing all their roles, and "
+                           f"replacing them with the BANNED role. Because the BANNED role has no permissions, "
+                           f"your discord server is safe of raids.\n"
+                           f"NOTE: After verifying that you want to do this, THERE IS NO GOING BACK. Sorry.\n"
+                           f"{discord_hyphen_separator} EXAMPLE {discord_hyphen_separator}\n"
+                           f"**`INPUT:`** $emergency_lockdown\n"
+                           f"**`OUTPUT:`**\n"
+                           f"Bot: **`WARNING 002:`** Are you SURE you want to ......\n"
+                           f"You: (If want to lock say yes. Otherwise, wait for 5 seconds)\n"
+                           f"Bot: (plays alarm sound to owner, then starts initializing lockdown sequence)\n"
+                           f"Bot: (Lockdowns the server and sends personalized message))",
                       brief='- DO NOT USE THIS. If we see you doing this, there will be consequences.')
     @is_guild_owner()
+    # NOTE: There are few things to fix. 1. Make initialization easier by adding user to say "no".
+    # NOTE: 2. make the try statement, and the playsound run at the same time.
     async def emergency_lockdown(self, ctx):
         global shutdown
         global beta_mode
@@ -621,45 +778,48 @@ class ModeratorCommands(commands.Cog):
             await brandon.send(f"**`WARNING 002:`** {author} is going to lockdown the server! Did you let him?")
             print(f"WARNING 002: {ctx.author} is going to shutdown the server. Did you let him?", file=sys.stderr)
 
-            playsound(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Misc things for Community "
-                      "Bot\Alarm Sound 1.mp3")
-
             try:
-                msg = await self.bot.wait_for('message', check=check, timeout=1)
+                msg = await self.bot.wait_for('message', check=check, timeout=5)
             except asyncio.TimeoutError:
                 await ctx.send('**`MISCERROR 001:`** Sorry! You took too long! Come back later.')
+            else:
+                await ctx.send(f"Sending alarm sound to owner...")
+                playsound(
+                    r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\Misc things "
+                    r"for Community Bot\Alarm Sound 1.mp3")
 
-            await ctx.send('Locking down server...'.format(msg))
-            await brandon.send(f"**`ALERT:`** {author} has shut down the server!")
-            guild_members = ctx.guild.members
-            guild_members.reverse()
-            estimated_time = len(guild_members) * 3
-            await ctx.send(f"ESTIMATED TIME: {estimated_time}")
-            time.sleep(3)
+                await ctx.send('Locking down server...'.format(msg))
+                await brandon.send(f"**`ALERT:`** {author} has shut down the server!")
+                guild_members = ctx.guild.members
+                guild_members.reverse()
+                estimated_time = len(guild_members) * 3
+                await ctx.send(f"ESTIMATED TIME: {estimated_time}")
+                time.sleep(3)
 
-            for member in guild_members:
-                # if str(member).split() not in ['Carl-bot#1536', 'Test Bot-Community edition#9493', 'BoxBot#7194',
-                # 'Villager Bot#6423', 'Myuu#9942', 'DiscordRPG#0366', 'Statbot#3472', 'TriviaBot#7948']:
-                if not member.bot:
-                    roles = member.roles
-                    roles.reverse()
-                    for role in roles:
-                        try:
-                            await member.remove_roles(role)
-                        except:
-                            pass
-                    banned_role = discord.utils.get(ctx.author.guild.roles, name="BANNED")
-                    await member.add_roles(banned_role)
+                for member in guild_members:
+                    # if str(member).split() not in ['Carl-bot#1536', 'Test Bot-Community edition#9493', 'BoxBot#7194',
+                    # 'Villager Bot#6423', 'Myuu#9942', 'DiscordRPG#0366', 'Statbot#3472', 'TriviaBot#7948']:
+                    if not member.bot:
+                        roles = member.roles
+                        roles.reverse()
+                        for role in roles:
+                            try:
+                                await member.remove_roles(role)
+                            except:
+                                pass
+                        banned_role = discord.utils.get(ctx.author.guild.roles, name="BANNED")
+                        await member.add_roles(banned_role)
+                        await member.send(f"{ctx.author.name} just locked the server!")
 
-            await ctx.send('Finished banning people!')
+                await ctx.send('Finished banning people!')
 
-        if shutdown and not beta_mode:
-            await ctx.send(f" **`ERROR 0001:`** {bot_shutdown_message}")
-        else:
-            await ctx.send(f"You dare try to use this command, {ctx.author}? I'm telling THE OWNER.")
+            if shutdown and not beta_mode:
+                await ctx.send(f" **`ERROR 0001:`** {bot_shutdown_message}")
+            else:
+                await ctx.send(f"You dare try to use this command, {ctx.author}? I'm telling THE OWNER.")
 
     # FIXME: FIX THIS DARN THING
-    @commands.command(help='COMING SOON!', brief='- give back normal roles to everyone')
+    @commands.command(help=no_help_error_message, brief='- give back normal roles to everyone')
     @is_guild_owner()
     async def giverole_lockdown(self, ctx):
         if not shutdown and not beta_mode:
@@ -683,7 +843,7 @@ class ModeratorCommands(commands.Cog):
             # TODO: Finish this
             await brandon.send(f"**`WARNING 003:` {ctx.author.name} has used an INCOMPLETE command. Uh Oh!")
 
-    @commands.command(help='COMING SOON!', brief='- Notifies everyone in the server with a message')
+    @commands.command(help=no_help_simple_message, brief='- Notifies everyone in the server with a message')
     @commands.has_role(695312034627059763)  # This is MODERATOR
     async def message_all(self, ctx, *, message):
         brandon = self.bot.get_user(683852333293109269)
@@ -698,7 +858,7 @@ class ModeratorCommands(commands.Cog):
                 except:
                     await brandon.send(f"**`ERROR 002:`** Failed to send message to {member.name}")
 
-    @commands.command(help='COMING SOON!', brief='- messages the server owner')
+    @commands.command(help=no_help_simple_message, brief='- messages the server owner')
     @commands.has_role(695757699161260104)  # This is GEMBER
     async def message_owner(self, ctx, *, message):
         # brandon = self.bot.get_user(683852333293109269)
@@ -739,15 +899,12 @@ class MiscellaneousCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def is_guild_owner():
-        """finds the guild owner of the server"""
-
-        def predicate(ctx):
-            return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
-
-        return commands.check(predicate)
-
-    @commands.command(help='COMING SOON!', brief='- Shows the rules')
+    @commands.command(help=f"{discord_hyphen_separator} RULES {discord_hyphen_separator}\n"
+                           f"This command just sends a list of rules, the EXACT ones from $rules."
+                           f"Beware that this will take some time, because the Discord API is not always reliable.\n"
+                           f"{discord_hyphen_separator} EXAMPLE {discord_hyphen_separator}\n"
+                           f"**`INPUT:`** $rules\n"
+                           f"**`OUTPUT:`** Bot: (sends rules one by one)", brief='- Shows the rules')
     async def rules(self, ctx):
         if not shutdown:
             await ctx.send("Rules:")
@@ -768,19 +925,24 @@ class MiscellaneousCommands(commands.Cog):
         else:
             await ctx.send(bot_shutdown_message)
 
-    @commands.command(help='COMING SOON!', brief='- Clears messages, Require Manage Messages')
+    @commands.command(help=no_help_simple_message, brief='- Clears messages, Require Manage Messages')
     @commands.has_permissions(manage_messages=True)
     # @commands.has_any_role('MODERATOR', 'Trusted', 'Co-manager', 'Administrator', 'CEO')
     # MinorNote: Uncomment above line to restrict access to most people
     async def clear(self, ctx, amount: int):
         if not shutdown:
-            roles = ctx.author.roles
-            roles.reverse()
-            # top_role = roles[0]
-            # if top_role.id >= 730159564078448660: # this is flawed because discord message id is kinda weird.
-            # else:
-            # await ctx.send('OOF! You do not have a high enough role!')
-            await ctx.channel.purge(limit=amount)
+            aidan = self.bot.get_user(683864011959435380)
+            # MinorNote: Comment below and remove tabs to make aidan actually able to do that
+            if str(ctx.author.name).strip() != aidan.name:
+                roles = ctx.author.roles
+                roles.reverse()
+                # top_role = roles[0]
+                # if top_role.id >= 730159564078448660: # this is flawed because discord message id is kinda weird.
+                # else:
+                # await ctx.send('OOF! You do not have a high enough role!')
+                await ctx.channel.purge(limit=amount)
+            else:
+                await ctx.send('You are Mlem, so therefore you can\'t use this')
         else:
             await ctx.send(bot_shutdown_message)
 
@@ -792,11 +954,13 @@ class MiscellaneousCommands(commands.Cog):
             if filename.endswith('.py'):
                 await ctx.send(f"cogs.{filename[:-3]}")
 
-    @commands.command(help='COMING SOON!', brief='- gives the latest changelogs in the format of a .txt')
-    async def changelogs(self, ctx):
+    @commands.command(help='COMING SOON!', brief='- gives some important files in the format of a .txt')
+    async def files(self, ctx):
         await ctx.send('------------------------------ **`CHANGELOGS `** ------------------------------')
         await ctx.send(file=discord.File(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord "
-                                         "Code\cogs\community_bot_changelog.txt"))
+                                         r"Code\Community Bot\cogs\community_bot_changelog.txt"))
+        await ctx.send(file=discord.File(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord "
+                                         r"Code\Community Bot\cogs\Doc\BuiltInCogs_doc.txt"))
 
     @commands.command(help='COMING SOON!', brief='- a command that has commands inside it :o')
     async def bot(self, ctx, parameters=None):
@@ -805,10 +969,38 @@ class MiscellaneousCommands(commands.Cog):
             if str(parameters).lower() == '-v':
                 await ctx.send(f"**`VERSION:`** {version}")
             elif str(parameters).lower() == '-i':
+                mod_time = os.path.getmtime(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord '
+                                            r'Code\Community Bot')
+                list_of_num_chars = []
+                only_files_cog = [f for f in os.listdir(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38"
+                                                        r"\Discord Code\Community Bot\cogs") if os.path.isfile(
+                    os.path.join(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community "
+                                 r"Bot\cogs", f))]
+                only_files_comm = [f for f in os.listdir(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38"
+                                                         r"\Discord Code\Community Bot") if os.path.isfile(
+                    os.path.join(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community "
+                                 r"Bot", f))]
+
+                for file_cog in only_files_cog:
+                    the_file_cog = open(
+                        rf"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord "
+                        rf"Code\Community Bot\cogs\{file_cog}")
+                    the_file_cog_data = the_file_cog.read()
+                    num_characters_cog = len(the_file_cog_data)
+                    list_of_num_chars.append(num_characters_cog)
+                for file_comm in only_files_comm:
+                    the_file_comm = open(rf"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord "
+                                         rf"Code\Community Bot\{file_comm}")
+                    the_file_comm_data = the_file_comm.read()
+                    num_characters_comm = len(the_file_comm_data)
+                    list_of_num_chars.append(num_characters_comm)
                 await ctx.send(f"{discord_hyphen_separator} **`INFO`** {discord_hyphen_separator}\n"
                                f"**`VERSION:`** {version}\n"
                                f"**`OWNER OF BOT:`** {brandon.name}\n"
-                               f"")
+                               f"**`LAST MODIFIED:`** {datetime.datetime.fromtimestamp(mod_time).strftime('%a %b %d %Y, %I:%M:%S %p')}\n"
+                               f"**`NUMBER OF CHARACTERS:`** {sum(list_of_num_chars)}")
+            elif str(parameters).lower() == '--help':
+                await ctx.send(f"COMING SOON!")
         else:
             await ctx.send(f"COMING SOON!")
 
