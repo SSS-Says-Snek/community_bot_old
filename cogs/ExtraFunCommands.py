@@ -19,7 +19,28 @@ class ExtraFunCommands(commands.Cog):
         await ctx.send('Sorry! Work in Progress! We\'ll notify you when we fix it!')
         brandon = self.bot.get_user(683852333293109269)
         await brandon.send(f"**`WARNING 003:` {ctx.author.name} has used an INCOMPLETE command. Uh Oh!")
+    
+    @commands.command(help='COMING SOON!', brief='- Capitalizes your text randomly! I dunno why...')
+    async def randomcaps(self, ctx, *, text_to_be_randomly_caps):
+        list_of_text = list(text_to_be_randomly_caps)
+        reconstructed_text = ''
+        for list_char in list_of_text:
+            rand_num = random.randint(0, 1)
+            if int(rand_num) == 0:
+                reconstructed_text += str(list_char).upper()
+            else:
+                reconstructed_text += str(list_char).lower()
+        await ctx.send(reconstructed_text)
 
+    @commands.command(help='COMING SOON!', brief='- Puts spaces in your text. Requires you saying the amount of spaces')
+    async def space_text(self, ctx, num_spaces, *, text_to_be_transcribed_into_spaces):
+        list_of_text = list(text_to_be_transcribed_into_spaces)
+        reconstructed_text = ''
+        for list_char in list_of_text:
+            reconstructed_text += list_char + str(int(num_spaces) * ' ')
+        await ctx.send(reconstructed_text)
+
+    # FIXME: THERE IS A FATAL FLAW THAT IT ACTUALLY USES MY MIC
     @commands.command(help='COMING SOON!', brief='- Plays a Guessing Game with your microphone!')
     async def speech_recog_guess(self, ctx):
         async def recognize_speech_from_mic(recognizer, microphone):
@@ -115,6 +136,8 @@ class ExtraFunCommands(commands.Cog):
                 else:
                     await ctx.send(f"Sorry, you ***_`LOSE!`_***\nI was thinking of {word}")
                     break
+            elif guess["transcription"].lower() == 'cancel':
+                break
             else:
                 await ctx.send(f"**`{guess['transcription']}`** is not in **`AVAILABLE WORDS`**. Try again!")
 

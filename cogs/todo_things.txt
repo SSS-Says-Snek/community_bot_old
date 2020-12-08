@@ -1,0 +1,45 @@
+==========================================================  THINGS I NEED TO DO:  ==========================================================
+
+- Ask for help on coding the Community Bot. PRIORITY: 4/10
+- Chill and play Guardian Tales once in a while. PRIORITY: 7.5/10
+- MOOSIC (preferably by Lionel Yu). PRIORITY: 8.8/10
+- GOOGLE: How to send messages in tasks discord.py. PRIORITY: 8/10
+- Figure out how to cancel a task when it is in a class. PRIORITY: I dunno
+- GOOGLE; How to replace strings using f-strings. PRIORITY: 10/10 TODOURGENT (also I don't know what this means)
+
+=============================================================== BOT THINGS:  ===============================================================
+- ALWAYS need those performance enhancements (5.5/10)
+- Also needs that bug fix (4/10)
+- Finish $pythonlogo. It's getting annoying, not having it :( (4/10)
+- Add new stuff (5/10)
+- Add infraction punishments (7.3/10)
+    - at 1 infraction, send them a warning message
+    - at 2 infractions, banrole them for 2 minutes
+    - at 3-5 infractions, banrole them for 10-15 minutes
+    - at 6-10 infractions, banrole them for 20-45 minutes
+    - at 11-14 infractions, banrole them and DO NOT give them back their roles
+        - consider messaging the moderators at this point
+    - 15+ will ban you
+
+- Add anti-corruption, anti-raids, anti-bad-security, other stuff (8/10)
+- Give roles back when emergency lockdown finishes (7/10)
+
+================================================================  GENERAL BOT THINGS:  =====================================================
+- READ ALL THE DISCORD.PY DOCS.................. (Wut.)
+- Give up on Heroku (8/10)
+- Add more auto stuff (7.6/10)
+- Convince people to use MORE BOT STUFF (Wut.)
+- Finally, focus on editing README.md (-2/10)
+- Jump forwards on versions, yeet.
+- CONSIDER using JSON++ instead of JSON (Wut)
+
+========================================================== GENERAL PYTHON THINGS: ==========================================================
+- Convince Aidan to code (5/10)
+- READ ALL THE PYTHON DOCS.................... (Wut. / Wut.)
+- Update PyCharm to 2020.2.4 (yay)
+- Wut async do (5.6/10)
+- learn more list comprehension (3/10)
+- help y we need yield (6.2/10)
+- regex module (????)
+- Artificial intelligence and GANs (4.3/10)
+- Dumb projects I like (2/10)

@@ -17,8 +17,9 @@ class ExtraCommands(commands.Cog):
         try:
             if not cog:
                 """Cog listing.  What more?"""
-                halp = discord.Embed(title='Cog Listing and Uncatergorized Commands',
-                                     description='Use `$help *cog*` to find out more about them!\n(By The Way, The Cog Name Must Be in Title Case, Just Like this Sentence.)')
+                halp = discord.Embed(title='Cog Listing and Uncategorized Commands',
+                                     description='Use `$help *cog*` to find out more about them!\n(By The Way, '
+                                                 'The Cog Name Must Be in Title Case, Just Like this Sentence.)')
                 cogs_desc = ''
                 for x in self.bot.cogs:
                     cogs_desc += ('{} - {}'.format(x, self.bot.cogs[x].__doc__) + '\n')
@@ -27,7 +28,7 @@ class ExtraCommands(commands.Cog):
                 for y in self.bot.walk_commands():
                     if not y.cog_name and not y.hidden:
                         cmds_desc += ('{}  {}'.format(y.name, y.help) + '\n')
-                halp.add_field(name='Uncatergorized Commands', value=cmds_desc[0:len(cmds_desc) - 1], inline=False)
+                halp.add_field(name='Uncategorized Commands', value=cmds_desc[0:len(cmds_desc) - 1], inline=False)
                 await ctx.message.add_reaction(emoji='✉')
                 await ctx.message.author.send('', embed=halp)
             else:
@@ -65,8 +66,8 @@ class ExtraCommands(commands.Cog):
         people_enter = ['Brandon Cui', 'Aidan Cui', 'Jason Murong', 'Daniel Collins', 'Daniel Murong', 'Zombix',
                         'FluffyDuck01', 'Lucas Joiner', 'Grayson Bou', 'Anna An']
         rand_reward = ['access to a secret category', 'a random role', 'Discord Dungeons Money',
-                        'Villager Bot Money', 'the ability to be immune to slowmode (temporary)',
-                        'owner of the server for ? hours', 'Myuu PKC']
+                       'Villager Bot Money', 'the ability to be immune to slowmode (temporary)',
+                       'owner of the server for ? hours', 'Myuu PKC']
         actual_rand_reward = random.randint(1, len(rand_reward))
         lucky_person = random.randint(1, len(people_enter))
         index_person = 1

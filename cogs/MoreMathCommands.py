@@ -2,6 +2,7 @@ from discord.ext import commands
 import math as m
 import numpy as np
 
+
 class MoreMathCommands(commands.Cog):
 
     def __init__(self, bot):
@@ -36,6 +37,16 @@ class MoreMathCommands(commands.Cog):
     async def arctan(self, ctx, a: float):
         """- takes the arctangent of x"""
         await ctx.send(f"The answer is about {round(np.arctan(a), 4)} in radians")
+
+    @commands.command()
+    async def factorial(self, ctx, a: int):
+        """- takes the factorial of x"""
+        await ctx.send(f"The answer is {m.factorial(a)}")
+
+    @commands.command()
+    async def combination(self, ctx, x: int, y: int):
+        """- takes the combination of x and y"""
+        await ctx.send(f"Work in Progress!")
 
 
 def setup(bot):

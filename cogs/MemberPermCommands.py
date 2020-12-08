@@ -3,15 +3,17 @@ import discord
 import time
 
 
+def is_guild_owner():
+    def predicate(ctx):
+        return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+
+    return commands.check(predicate)
+
+
 class MemberPermissionCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
-    def is_guild_owner():
-        def predicate(ctx):
-            return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
-        return commands.check(predicate)
 
     @commands.command(help='COMING SOON!', brief='- bans someone')
     async def ban(self, ctx, member: discord.Member, *, reason=None):
@@ -26,7 +28,7 @@ class MemberPermissionCommands(commands.Cog):
             await banned_user.send(f"Oh No! {ctx.author.mention} has banned you for {reason}!")
 
     @commands.command(help='COMING SOON!', brief='- unbans someone')
-    @commands.has_role(695312034627059763)# this role is MODERATOR
+    @commands.has_role(695312034627059763)  # this role is MODERATOR
     async def unban(self, ctx, *, member):
         banned_users = await ctx.guild.bans()
         member_name, member_discriminator = member.split('#')
@@ -52,7 +54,7 @@ class MemberPermissionCommands(commands.Cog):
         await user.add_roles(role)
 
     @commands.command(help='COMING SOON!', brief='- bans someone using BANNED role. Good for brief punishments')
-    @commands.has_role(695312034627059763)# this role is MODERATOR
+    @commands.has_role(695312034627059763)  # this role is MODERATOR
     async def banrole(self, ctx, user: discord.Member):
         await ctx.send(f"Attempting to ban {user.mention}...")
         author_roles = ctx.author.roles
