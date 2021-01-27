@@ -1,3 +1,4 @@
+""""""
 import discord
 from discord.ext import commands
 import speech_recognition as sr
@@ -40,7 +41,25 @@ class ExtraFunCommands(commands.Cog):
             reconstructed_text += list_char + str(int(num_spaces) * ' ')
         await ctx.send(reconstructed_text)
 
-    # FIXME: THERE IS A FATAL FLAW THAT IT ACTUALLY USES MY MIC
+    @commands.command(help='COMING SOON!', brief='- turns text into spoilers for you to frustrate people')
+    async def spoiler_text(self, ctx, *, text_to_be_spoiled):
+        constructed_text = ''
+        for string in text_to_be_spoiled:
+            constructed_text += rf"\||{string}\||"
+        await ctx.send(constructed_text)
+
+    @commands.command(help='COMING SOON!', brief='- removes a string... FROM A STRING????')
+    async def remove_string(self, ctx):
+        pass
+
+    @commands.command(help='COMING SOON!', brief='- checks if it is a palindrome')
+    async def is_palindrome(self, ctx, *, string_to_palindrome):
+        if string_to_palindrome == string_to_palindrome[::-1]:
+            await ctx.send('OMG ITS A **`PALINDROME`**')
+        else:
+            await ctx.send('Bruh Y U So Dumb it\'s not a **`palindrome`**')
+
+    # TODOURGENT: Prepare for deprecation. RIP command, you've been a good boy
     @commands.command(help='COMING SOON!', brief='- Plays a Guessing Game with your microphone!')
     async def speech_recog_guess(self, ctx):
         async def recognize_speech_from_mic(recognizer, microphone):

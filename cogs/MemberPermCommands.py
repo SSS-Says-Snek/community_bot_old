@@ -1,6 +1,8 @@
+""""""
 from discord.ext import commands
 import discord
 import time
+import contextlib
 
 
 def is_guild_owner():
@@ -42,12 +44,13 @@ class MemberPermissionCommands(commands.Cog):
                 return
 
     @commands.command(help='COMING SOON!', brief='- kicks someone')
-    @is_guild_owner()
+    @commands.has_role(695312034627059763)
     async def kick(self, ctx, member: discord.Member, *, reason=None):
         await member.ban(reason=reason)
         await ctx.send(f"kicked {member.mention} for {reason}")
 
     @commands.command()
+    @commands.has_role(730159564078448660)
     async def giverole(self, ctx, user: discord.Member, role: discord.Role):
         await ctx.send(f"Attempting to add {role.mention} to {user.mention}...")
         time.sleep(0.4)
@@ -61,17 +64,18 @@ class MemberPermissionCommands(commands.Cog):
         ban_roles = user.roles
 
         for ban_role in ban_roles:
-            try:
+            with contextlib.suppress():
                 await user.remove_roles(ban_role)
-            except:
-                pass
         BANNED_role = discord.utils.get(ctx.author.guild.roles, name="BANNED")
         await user.add_roles(BANNED_role)
 
     @commands.command(help='COMING SOON!', brief='- messages a user from the server. Good for escaping bans')
-    @commands.has_any_role('MODERATOR', 'Trusted', 'Co-manager', 'Administrator', 'CEO')
-    async def message_user(self, ctx, user: discord.Member, *, message):
-        person_to_message = self.bot.get_user(user.id)
+    @commands.has_any_role('MODERATOR', 'Trusted', 'Administrator', 'CEO')
+    async def message_user(self, ctx, user, *, message):
+        if isinstance(user, discord.Member):
+            person_to_message = self.bot.get_user(user.id)
+        else:
+            person_to_message = self.bot.get_user(int(user))
         author = self.bot.get_user(ctx.author.id)
         try:
             await person_to_message.send(f"--------------- **`INCOMING MESSAGE`** from {ctx.author.name} ---------------")
