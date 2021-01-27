@@ -26,7 +26,7 @@ Hopefully, I can change the bot from a test bot into a real bot!
 ------------------------------------------------------------------
 <strong>INFO</strong>
 ------------------------------------------------------------------</p>
-VERSION: 0.5.0.b2
+VERSION: 0.6.0.b1
 <p>
 
 OWNER: Brandon Cui
