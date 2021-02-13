@@ -12,33 +12,39 @@ BuiltInCogs.py is made up of SEVEN different classes, which are:
     - Tasks. This class has some core tasks, like the audit log updater, as well as some tasks-related functions.
 
 I won't go into details about this, because then it would be way too long, to find out more, go to BuiltInCogs_doc.txt.
-made with ♥ with discord.py.
+made with ♥ (?) with discord.py.
 """
 # NOTE: Modules that I barely use
 import random
-from sympy import Eq, solve, Symbol, parse_expr, init_printing, linsolve, EmptySet
+import psutil
+from sympy import Eq, solve, Symbol, parse_expr, init_printing, linsolve, EmptySet, N
 from sympy.parsing.sympy_parser import standard_transformations, implicit_multiplication_application
 import contextlib
 import subprocess
+import matplotlib.pyplot as plt
 from playsound import playsound
 from win10toast import ToastNotifier
-from cogs.utility import *
+
 # NOTE: Modules that I kinda use
+import re
 import sys
 import time
 import traceback
 from configparser import ConfigParser
-import datetime
+import pytz
 import asyncpg
+import os
+import json
 # from threading import Thread
 
 # NOTE: Modules that I use. A LOT.
-import json
 from mysql.connector import connect, errors
 import logging
 import math as m
-import os
 import asyncio
+import datetime
+from cogs.utility import *
+from cogs.constants import *
 
 # NOTE: THE HOLY DISCORD PACKAGES
 import discord
@@ -47,7 +53,7 @@ from discord.ext import commands, tasks
 NOTIFICATION = 100
 logging.addLevelName(NOTIFICATION, 'NOTIFICATION')
 logging.basicConfig(level=logging.CRITICAL, filename='cogs/discord_bot_log.log',
-                    format="On %(asctime)s: %(levelname)s: %(message)s", datefmt="%a %b %d %Y, %I:%M:%S %p")
+                    format="On %(asctime)s: %(levelname)s: %(message)s", datefmt=DEFAULT_DATETIME_FORMAT)
 configure = ConfigParser()
 toaster = ToastNotifier()
 configure.read(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community '
@@ -57,6 +63,7 @@ configure.read(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord C
 BOT_SHUTDOWN_MESSAGE = 'Sorry! The bot is shut down by the owner! Try again later!'
 BETA_TESTING_MESSAGE = 'Sorry! The bot is only available for selected beta testers! Try again later!'
 DISCORD_HYPHEN_SEPARATOR = '------------------------------------------------'
+PRETTY_DISCORD_SEPARATOR = "+========================================+"
 NO_HELP_ERROR_MESSAGE = "DOESN'T WORK.\nSORRY! This command doesn't work, so there is no reason to give it a full " \
                         "command\nYou will see this message ever time there is an incomplete command "
 NO_HELP_SIMPLE_MESSAGE = "This command does not have a complete help message for some reason.\nONE: The message is " \
@@ -64,35 +71,38 @@ NO_HELP_SIMPLE_MESSAGE = "This command does not have a complete help message for
                          "message is too similar to another help command, so we are just too lazy to add " \
                          "them.\nTHREE: The message's help command will be implemented, but not right now. "
 
-WELCOME_MESSAGE = "Welcome to the **`community`** server! This is where we hang out, end relationships, and much more!\nDon't feel like " \
-                  "you belong anywhere? Well, you can check out our MANY channels (we just have too much).\nWanna talk about your " \
-                  "**`NEW`** favorite game, but you want to hear our beautiful voices? Check out our VOICE CHANNELS??!?!??!\n" \
-                  "Finally, want to escape reality, and go play some text-based games? We got you covered! With our many bots, " \
-                  "you'll be able to play a wide variety of games, like Pokemon and Villager Bot (?)\n" \
-                  "In the end, we just want to make you happy, and have fun in the server!\n" \
-                  "**`Features`** in the server include: \n\t" \
-                  "- FRIENDS\n\t" \
-                  "- VOICE CHATS\n\t" \
-                  "- GAMES\n\t" \
-                  "- CHANNELS\n\t" \
-                  "- AND THE LIST, goes ON. and ON. and ON. and ON."
+# WELCOME_MESSAGE= "Welcome to the **`community`** server! This is where we hang out, end relationships, and much more!\nDon't feel like " \
+#                   "you belong anywhere? Well, you can check out our MANY channels (we just have too much).\nWanna talk about your " \
+#                   "**`NEW`** favorite game, but you want to hear our beautiful voices? Check out our VOICE CHANNELS??!?!??!\n" \
+#                   "Finally, want to escape reality, and go play some text-based games? We got you covered! With our many bots, " \
+#                   "you'll be able to play a wide variety of games, like Pokemon and Villager Bot (?)\n" \
+#                   "In the end, we just want to make you happy, and have fun in the server!\n" \
+#                   "**`Features`** in the server include: \n\t" \
+#                   "- FRIENDS\n\t" \
+#                   "- VOICE CHATS\n\t" \
+#                   "- GAMES\n\t" \
+#                   "- CHANNELS\n\t" \
+#                   "- AND THE LIST, goes ON. and ON. and ON. and ON."
+WELCOME_MESSAGE = ""
 
-GOODBYE_MESSAGE = "I hope that you've enjoyed your stay here on the community server. We are going to miss you dearly, and we " \
-                  "hope to see you again soon. If you want to join back anytime, click the link in the description :)\n" \
-                  "**`LINK:`** https://discord.gg/d98xydx4Su\n" \
-                  "Goodbye, and see you around!\n\t" \
-                  "- Sincerely, Brandon Cui, owner of the server"
+# GOODBYE_MESSAGE = "I hope that you've enjoyed your stay here on the community server. We are going to miss you dearly, and we " \
+#                   "hope to see you again soon. If you want to join back anytime, click the link in the description :)\n" \
+#                   "**`LINK:`** https://discord.gg/d98xydx4Su\n" \
+#                   "Goodbye, and see you around!\n\t" \
+#                   "- Sincerely, Brandon Cui, owner of the bot"
+GOODBYE_MESSAGE = ""
 
-VERSION = 'v0.6.0.b1'
-MODERATOR_SECRET_PASSWORD = 'thispassworddoesnotexist99!'
+VERSION = 'v0.6.5.post1'
+MODERATOR_SECRET_PASSWORD = SECRET_PASSWORD
 PATH_TO_USER_INFO_JSON = r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\json files\user_info.json'
 PATH_TO_BOT_INFO_JSON = r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\json files\bot_info.json'
 PATH_TO_AUDIT_LOG_JSON = r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\json files' \
                          r'\ignored_audit_log_id.json'
 PATH_TO_VARIABLES_JSON = r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\json files\variables.json'
 FORBIDDEN_WORDS = ['fuck', 'bitch', 'shit', 'gabe itch', 'penis', 'cunt', 'dildo', 'f|ck']
-SKIP_EXTENSION_LOAD = ['cogs.utility']
 # NOTE: Got most of them from Anna (and Will trying way too hard to cuss)
+SKIP_EXTENSION_LOAD = ['cogs.utility']
+CST = pytz.timezone("US/Central")
 
 # NOTE: BELOW ARE SOME KEY BOOLEANS
 with open(PATH_TO_VARIABLES_JSON) as read_variable_json:
@@ -101,7 +111,6 @@ with open(PATH_TO_VARIABLES_JSON) as read_variable_json:
 # snake_case is SUPREME
 debug = all_variables["debug"]
 shutdown = all_variables["shutdown"]
-going_to_run_debug = True
 beta_mode = False
 stop_roles_update = False
 first_time = True
@@ -109,19 +118,18 @@ check_failure_reason = 'CheckFailure'
 notify_stuff = {
     "voice_channel": []
 }
+process = psutil.Process(os.getpid())
 
 # NOTE: In v1.0, ask for a password for the connection
-connection = connect(user='root', password='thispassworddoesnotexist99!', port='3306', database='discord_bot')
+connection = connect(user='root', password=SECRET_PASSWORD, port='3306', database='discord_bot')
 cursor = connection.cursor(buffered=True)
 
-# TODO: Make all commands following beta mode patterns. POSTPONED
 # TODO: Make all help commands have f""" instead of f"". POSTPONED
 # FIXME Make all commands that message someone has an `except Exception as e` block. POSTPONED
 # TODOURGENT: Learn Requests so that I can fill in that form
 # TODO: Learn SQL and plan to ditch JSON. I don't know how, but sure
 
-# NOTE: below are some check functions (yay)
-
+# Yes just some printing down there, nothing *complex*
 if not debug:
     print('Debug is set to False. Custom syntax will be used.')
 else:
@@ -131,9 +139,11 @@ logging.log(NOTIFICATION, "Establishing connection to SQL Database...")
 
 
 def get_infractions(user_id):
+    """gets infractions in the SQL database"""
     cursor.execute("SELECT overall_infractions FROM members WHERE id=%(id)s", {"id": user_id})
 
 
+# NOTE: below are some check functions (yay)
 def is_guild_owner():
     """checks if the guild owner called the command"""
     with open(PATH_TO_VARIABLES_JSON) as read_var_json:
@@ -165,6 +175,17 @@ def brandon_only():
         return ctx.author.id == 683852333293109269
 
     check_failure_reason = 'Not Brandon'
+    return commands.check(predicate)
+
+
+def server_owner_or_bot_owner():
+    """checks if the command was called by server owner or me"""
+    global check_failure_reason
+
+    def predicate(ctx):
+        return ctx.author.id == ctx.guild.owner_id or ctx.author.id == 683852333293109269
+
+    check_failure_reason = 'Not Server Owner or Bot owner'
     return commands.check(predicate)
 
 
@@ -235,7 +256,7 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
         member_id = member.id
         member_user = self.bot.get_user(member_id)
         await member_user.send(GOODBYE_MESSAGE)
-        await member_user.send('P.S. I\'m not gonna remove ur ID from my bot, cause 99% of the time, ur my friend :)')
+        # await member_user.send('P.S. I\'m not gonna remove ur ID from my bot, cause 99% of the time, ur my friend :)')
 
     @commands.Cog.listener()
     async def on_error(self, event):
@@ -272,26 +293,24 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
     async def on_voice_state_update(self, member, before, after):
         now = datetime.datetime.now()
         if not before.channel and after.channel:
-            toaster.show_toast("Voice Channel Update!", f"On {now.strftime('%a %b %d %Y, %I:%M:%S %p')} {str(member)[:-5]} has joined "
+            toaster.show_toast("Voice Channel Update!", f"On {now.strftime(DEFAULT_DATETIME_FORMAT)} {str(member)[:-5]} has joined "
                                                         f"voice channel {after.channel}", duration=5,
                                icon_path=r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community '
                                          r'Bot\cogs\img\bot_logo.ico')
         elif before.channel and not after.channel:
-            toaster.show_toast("Voice Channel Update!", f"On {now.strftime('%a %b %d %Y, %I:%M:%S %p')}, {str(member)[:-5]} has left "
+            toaster.show_toast("Voice Channel Update!", f"On {now.strftime(DEFAULT_DATETIME_FORMAT)}, {str(member)[:-5]} has left "
                                                         f"voice channel {before.channel}", duration=5,
                                icon_path=r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community '
                                          r'Bot\cogs\img\bot_logo.ico')
 
-    """@commands.Cog.listener()
+    @commands.Cog.listener()
     async def on_message_delete(self, message):
-        censored = False
-        for forbidden_word in forbidden_words:
+        dis_star = r'\*'
+        for forbidden_word in FORBIDDEN_WORDS:
             if forbidden_word in message:
-                print('Uh Oh! The bot must\'ve picked out a poo poo word, so let\'s CENSOR it.')
-                censored = True
+                message.content = str(message.content).replace(forbidden_word, f"{forbidden_word[0]}{dis_star * (len(forbidden_word) - 1)}")
 
-        # if not censored:
-        print(f"SOMEONE just deleted a message. Here, take a look at this message:\nMESSAGE: {message}")"""
+        print(f"SOMEONE ({message.author.name}) just deleted a message. Here, take a look at this message:\nMESSAGE: {message.content}")
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -331,7 +350,7 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
     @commands.Cog.listener()
     async def on_disconnect(self):
         now = datetime.datetime.now()
-        now_string = datetime.datetime.now().strftime('%a %b %d %Y, %I:%M:%S %p')
+        now_string = datetime.datetime.now().strftime(DEFAULT_DATETIME_FORMAT)
         message = f"Uh oh! On {now_string}, your bot disconnected D:"
         if now.hour >= 22 or now.hour <= 7:
             message += ' (EXPECTED)'
@@ -348,6 +367,11 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
         server = self.bot.get_guild(message.guild.id)
         community_server = self.bot.get_guild(683869900850200581)
 
+        if '@someone' in message.content:
+            await message.delete()
+            all_members = message.guild.members
+            random_member = random.choice(all_members)
+            await message.channel.send(str(message.content).replace('@someone', random_member.mention) + f"\n\t- {message.author.name}")
         for forbidden_word in FORBIDDEN_WORDS:
             if (forbidden_word in message.content) and 'curse' not in str(message.channel).strip():
                 await message.delete()
@@ -355,7 +379,7 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
                 owner = self.bot.get_user(message.guild.owner.id)
                 author = self.bot.get_user(message.author.id)
                 task_cog = self.bot.get_cog('Tasks')
-                time_of_profanity = datetime.datetime.fromtimestamp(time.time()).strftime('%a %b %d %Y, %I:%M:%S %p')
+                time_of_profanity = datetime.datetime.fromtimestamp(time.time()).strftime(DEFAULT_DATETIME_FORMAT)
                 insert_member_query = "INSERT INTO members VALUES (%s, %s, %s, %s, %s, %s)"
                 data_member = (message.author.id, message.author.name, message.author.discriminator, 0, 0, False)
 
@@ -554,7 +578,10 @@ class DebugAndEvents(commands.Cog, name='Debug and Events'):
     @commands.command(help=NO_HELP_ERROR_MESSAGE, brief='- whatever I want to test, IS IN HERE')
     async def function_test(self, ctx):
         await ctx.send('<a:thinkinghmm:723931767580524636>')
-        await ctx.send(len(self.bot.guilds))
+        embed = discord.Embed(title="Test", color=0xaef45c, description="Write a tune that really sucks\nTest oisdhfjiopshifpsadhpiofas\n"
+                                                                        "fdidofhsdpiofhspiodfhpiosdfhpoi\n\tsifhsopdfh")
+        embed.add_field(name='Field 1??', value='Some text goes here', inline=True)
+        await ctx.send(embed=embed)
 
 
 class OwnerOnly(commands.Cog, name='Owner Only'):
@@ -765,6 +792,83 @@ class OwnerOnly(commands.Cog, name='Owner Only'):
                            f"**`ERROR (if there are any):`** {subprocess_object_returned.stderr.decode('utf-8').strip()}\n"
                            f"**`RETURN CODE:`** {str(subprocess_object_returned.returncode)}")
 
+    @server_owner_or_bot_owner()
+    @commands.command(help='COMING SOON!', brief='- archives a channel')
+    async def archive(self, ctx, channel_to_get: discord.TextChannel, num_message_to_get: str, channel_to_post: discord.TextChannel,
+                      *, options=''):
+        nl = '\n'
+        tab = '\t'
+        three_quote = '```'
+        escape_three_quote = r'\`\`\`'
+        reverse = True
+        # options
+        oldest_first = False
+        mention = False
+        compact = False
+        suppress_pings = False
+        before = None
+        after = None
+
+        options_list = options.split(',')
+        options_list = [i.strip().lower() for i in options_list]
+        if 'oldest' in options_list:
+            reverse = False
+            oldest_first = True
+        if 'mention' in options_list:
+            mention = True
+        if 'compact' in options_list:
+            compact = True
+        if 'suppress pings' in options_list:
+            suppress_pings = True
+        for option in options_list:
+            if 'before' in option:
+                stripped_before = option.replace('before', '').strip()
+                before = datetime.datetime.strptime(stripped_before, '%b %d %Y')
+            if 'after' in option:
+                stripped_after = option.replace('after', '').strip()
+                after = datetime.datetime.strptime(stripped_after, '%b %d %Y')
+        print(f"Archiving {num_message_to_get} messages from {channel_to_get.name} to {channel_to_post.name}...")
+        logging.log(NOTIFICATION, f"Archiving {num_message_to_get} messages from {channel_to_get.id} to {channel_to_post.id}...")
+
+        await ctx.send(f"Archiving {num_message_to_get} messages from {channel_to_get.mention} to {channel_to_post.mention}...")
+        if num_message_to_get.lower() != 'all':
+            async with ctx.channel.typing():
+                messages = await channel_to_get.history(limit=int(num_message_to_get), oldest_first=oldest_first, before=before, after=after
+                                                        ).flatten()
+        else:
+            async with ctx.channel.typing():
+                messages = await channel_to_get.history(limit=None, oldest_first=oldest_first, before=before, after=after).flatten()
+        if reverse:
+            messages.reverse()
+        parsed_messages = []
+        for message in messages:
+            when_message_created = message.created_at.replace(tzinfo=pytz.utc).astimezone(CST).strftime(DEFAULT_DATETIME_FORMAT)
+
+            if suppress_pings:
+                all_pings_in_msg = re.findall('<@![0-9]+>', message.content)
+                for ping_in_msg in all_pings_in_msg:
+                    message.content = message.content.replace(ping_in_msg, f"**`PINGED {ping_in_msg[3:-1]}`**")
+            # Confusion alert
+            if not compact:
+                parsed_messages.append(
+                    f"**`AUTHOR:`** {message.author} {f'({message.author.mention}) ' if mention else ''}[{message.author.id}]\n"
+                    f"**`DATE:`** {when_message_created}\n"
+                    f"**`MESSAGE:`** \n> {f'{nl}> '.join(message.content.split(nl))}\n" if message.content else '"'
+                                                                                                                f"**`ATTACHMENT(S):`** \n> {f'{nl}> '.join(nl.join([f'{i + 1}:{nl}{tab}**`NAME: `** {repr(attachment.filename)}{nl}{tab}**`URL: `** {attachment.url}' for i, attachment in enumerate(message.attachments)]).split(nl))}\n" if message.attachments else ""
+                                                                                                                                                                                                                                                                                                                                                                       f"**`EMBEDS(S):`** \n> {f'{nl}> '.join(nl.join([(f'{i + 1}:{nl}{tab}**`Title:`** {embed.title}{nl}{tab}**`Description:`** ```{nl}{(embed.description if isinstance(embed.description, str) else nl).replace(three_quote, escape_three_quote)}```{nl}{tab}**`Image URL:`** {embed.image.url}' if isinstance(embed, discord.Embed) else nl) for i, embed in enumerate(message.embeds)]).split(nl))}\n" if message.embeds else "")
+            else:
+                parsed_messages.append(f"<{message.author.mention if mention else message.author}> {message.content}")
+        if not compact:
+            archive_string = f"+{'=' * 40}+\n" + f"+{'=' * 40}+\n".join(parsed_messages) + f"+{'=' * 40}+\n"
+        else:
+            archive_string = '\n'.join(parsed_messages)
+        archive_list = split_long_message(archive_string)
+
+        for message in archive_list:
+            if len(message) < 2000:
+                await channel_to_post.send(message)
+        await ctx.send(f"Successfully archived {len(messages)} messages from {channel_to_get.mention} to {channel_to_post.mention}")
+
 
 class FunCommands(commands.Cog, name='Fun Commands'):
     def __init__(self, bot):
@@ -952,7 +1056,6 @@ class MathCommands(commands.Cog, name='Math Commands'):
                 init_printing(pretty_print=True)
                 user_input_problem = str(user_input_problem.content).lower().replace('^', '**').replace('times', '*')
                 user_input_problem_split, num = user_input_problem.split('=')
-                print(user_input_problem_split)
                 expression = parse_expr(user_input_problem_split, transformations=transformations)
                 try:
                     solution = solve(Eq(expression, int(num)))
@@ -1021,6 +1124,7 @@ class MathCommands(commands.Cog, name='Math Commands'):
                     user_input_substitute_parsed = parse_expr(str(
                         user_input_substitute.content).replace('^', '**'), transformations=transformations)
                     solution = user_input_substitute_parsed.subs(sub_var_list_parsed)
+                    solution = str(solution).replace('**', '^').replace('*', r'\*')
                     await ctx.send(rf"OH MY GOSH IT ACTUALLY WORKED. Ahem, I \*totally\* believed that it could substitute. Anyways, "
                                    rf"the answer to your substitution of {user_input_substitute.content} is... **`{str(solution)}`**")
                 else:
@@ -1034,14 +1138,9 @@ class MathCommands(commands.Cog, name='Math Commands'):
                 await ctx.send('K. Now, GIVE ME THE EQUATION YOU WANT TO EVALUATE. **`NOW`**')
                 user_input_evaluate = await self.bot.wait_for('message', check=check_if_same_person)
                 await ctx.send('Eek now I have **`ALL THE POWER IN THE WORLD`** to EVALUATE your poopy equation')
-                solution = parse_expr(str(user_input_evaluate.content).replace('^', '**'))
-                try:
-                    solution = float(solution)
-                except TypeError:
-                    await ctx.send(r'Haha y u dumb. This is \*NOT\* the place for variable-related stuff. Is you has know mind?')
-                else:
-                    await ctx.send(f"WOW WOW WOW WOW WOW I'm SO AMAZING. Anyways, Here's the evaluation result "
-                                   f"of **`{user_input_evaluate.content}`**: {str(solution)}")
+                solution = N(str(user_input_evaluate.content).replace('^', '**')).expand()
+                await ctx.send(f"WOW WOW WOW WOW WOW I'm SO AMAZING. Anyways, Here's the evaluation result "
+                               f"of **`{user_input_evaluate.content}`**: {str(solution)}")
 
     @exponent.error
     async def exponent_handler(self, ctx, error):
@@ -1187,13 +1286,22 @@ class ModeratorCommands(commands.Cog, name='Moderator Commands'):
     @commands.command(help='COMING SOON!', brief='- shuts down the bot. Yay?')
     @brandon_only()
     async def shutdown_bot(self, ctx):
-        await ctx.send('Ok. **`SHUTTING DOWN BOT...`** (also just saying it actually doesn\'t make the bot offline)')
-        with open(PATH_TO_VARIABLES_JSON) as read_var_json:
-            all_stuff = json.load(read_var_json)
-        all_stuff["shutdown"] = True
-        with open(PATH_TO_VARIABLES_JSON, 'w') as write_var_json:
-            json.dump(all_stuff, write_var_json)
-        await ctx.send('**`SUCCESS`** Successfully shut down the bot')
+
+        def check_if_same_person(author_check):
+            return author_check.author.id == ctx.author.id
+
+        user = self.bot.get_user(ctx.author.id)
+        await ctx.send('Authenticating shutdown... requires password')
+        await user.send('OOH INTERESTING... gimme the password to shutdown the bot')
+        message = await self.bot.wait_for('message', check=check_if_same_person)
+        if str(message.content).strip() == MODERATOR_SECRET_PASSWORD:
+            await user.send('Oh ok...\nMy final words:\n\tI am a potato\nPeace')
+            await ctx.send("Attention people...\nMy final words:\n\tI am a potato\nPeace")
+            await self.bot.change_presence(status=discord.Status.offline)
+            await self.bot.close()
+        else:
+            await user.send('Nah man, you\'re password is wrong. Sorry')
+            await ctx.send(f"HOW DARE YOU {ctx.author.mention}! YOU SHOULD BE ASHAMED YOU GOT THE WRONG PASSWORD")
 
     @commands.command(help='COMING SOON!', brief='- runs SQL query... I think')
     @commands.is_owner()
@@ -1368,11 +1476,16 @@ class MiscellaneousCommands(commands.Cog, name='Miscellaneous Commands'):
                     the_file_comm_data = the_file_comm.read()
                     num_characters_comm = len(the_file_comm_data)
                     list_of_num_chars.append(num_characters_comm)
+                memory_info = format_byte(process.memory_info().rss)
+                used_ram = format_byte(psutil.virtual_memory().used)
+                when_ran = datetime.datetime.fromtimestamp(process.create_time()).strftime(DEFAULT_DATETIME_FORMAT)
                 await ctx.send(f"{DISCORD_HYPHEN_SEPARATOR} **`INFO`** {DISCORD_HYPHEN_SEPARATOR}\n"
                                f"**`VERSION:`** {VERSION}\n"
                                f"**`OWNER OF BOT:`** {brandon.name}\n"
-                               f"**`LAST MODIFIED:`** {datetime.datetime.fromtimestamp(mod_time).strftime('%a %b %d %Y, %I:%M:%S %p')}\n"
-                               f"**`NUMBER OF CHARACTERS:`** {sum(list_of_num_chars)}")
+                               f"**`LAST MODIFIED:`** {datetime.datetime.fromtimestamp(mod_time).strftime(DEFAULT_DATETIME_FORMAT)}\n"
+                               f"**`NUMBER OF CHARACTERS:`** {sum(list_of_num_chars)}\n"
+                               f"**`MEMORY TAKEN UP:`** {memory_info} ({round(process.memory_percent(), 4)}% of {used_ram})\n"
+                               f"**`TIME OF EXECUTION:`** {when_ran}")
             elif str(parameters).lower() == '--help':
                 await ctx.send(f"COMING SOON!")
         else:
@@ -1392,7 +1505,7 @@ class MiscellaneousCommands(commands.Cog, name='Miscellaneous Commands'):
                 await ctx.send(r'**`ERROR: `** BRUH YOU DUMEHEAD, that user does \*NOT\* exist. Get lost, you useless entity')
         if user:
             time_created = user.created_at
-            time_created = time_created.strftime('%a %b %d %Y, %I:%M:%S %p')
+            time_created = time_created.strftime(DEFAULT_DATETIME_FORMAT)
             avatar = user.avatar_url_as(size=512)
             send_to_user = f"**`SUCCESS`** Successfully retrieved user. Here are some basic information...\n" \
                            f"**`USER NAME: `** {user.name}\n" \
@@ -1405,6 +1518,22 @@ class MiscellaneousCommands(commands.Cog, name='Miscellaneous Commands'):
             await ctx.send(send_to_user)
         else:
             await ctx.send(rf"BRUH YOU DUMBO. {user_context} doesn \*NOT\* exist. Get lost, you useless entity")
+
+    @commands.command(help='COMING SOON!', brief='- get_user, but pretty :D')
+    async def pretty_get_user(self, ctx, user_context=None):
+        if user_context:
+            try:
+                try:
+                    user = await self.bot.fetch_user(int(user_context))
+                except discord.errors.NotFound:
+                    await ctx.send(r'**`ERROR: `** BRUH YOU DUMEHEAD, that user does \*NOT\* exist. Get lost, you useless entity')
+            except ValueError:
+                try:
+                    user = await self.bot.fetch_user(user_context[3:-1])
+                except discord.errors.NotFound:
+                    await ctx.send(r'**`ERROR: `** BRUH YOU DUMEHEAD, that user does \*NOT\* exist. Get lost, you useless entity')
+        else:
+            user = await self.bot.get_member(ctx.author.id)
 
     @clear.error
     async def clear_handler(self, ctx, error):
@@ -1445,6 +1574,7 @@ class Tasks(commands.Cog):
         # NOTE: Only for community server because I am *les paranoid*
         now = sec_since_midnight(datetime.datetime.now())
         if WIFI_ONLINE <= now <= WIFI_OFFLINE:
+            now_datetime = datetime.datetime.now()
             community_server = self.bot.get_guild(683869900850200581)
 
             with open(PATH_TO_AUDIT_LOG_JSON) as ignore_audit_log_id_file:
@@ -1464,7 +1594,7 @@ class Tasks(commands.Cog):
                                             f"course). Once you fail, you will be banned using a role, and all moderators will be informed "
                                             f"of your situation. They will decide on your punishment later on.\n"
                                             f"{DISCORD_HYPHEN_SEPARATOR} **`INFO`** {DISCORD_HYPHEN_SEPARATOR}\n"
-                                            f"TIME DETECTED: **`{now.strftime('%a %b %d %Y, %I:%M:%S %p')}`**")
+                                            f"TIME DETECTED: **`{now_datetime.strftime(DEFAULT_DATETIME_FORMAT)}`**")
                     failed_tries = 0
                     while failed_tries < 3:
                         try:
@@ -1558,20 +1688,30 @@ class Tasks(commands.Cog):
                 await self.bot.change_presence(status=discord.Status.online,
                                                activity=discord.Streaming(name=random_status_key, url=statuses[random_status_key][0]))
 
-    @tasks.loop(hours=2)
+    @tasks.loop(hours=1)
     async def ping_update(self):
         # now = datetime.datetime.now()
         now = sec_since_midnight(datetime.datetime.now())
         if WIFI_ONLINE <= now <= WIFI_OFFLINE:
             logging.log(NOTIFICATION, 'running task ping_update')
-            spam_channel = self.bot.get_channel(803688097979433026)
-            await spam_channel.send(f"**`PING UPDATE: `** ping is currently {round(self.bot.latency * 1000)} milliseconds")
+            now_inside_loop = datetime.datetime.now()
+
+            bot_channel = self.bot.get_channel(803688097979433026)
+            await bot_channel.send(f"**`PING UPDATE: `** ping is currently {round(self.bot.latency * 1000)} milliseconds")
+
+            with open(PATH_TO_BOT_INFO_JSON) as read_bot_json:
+                all_info = json.load(read_bot_json)
+            all_info["datetime_ping"].append(now_inside_loop.timestamp())
+            all_info["ping_latency"].append(round(self.bot.latency * 1000))
+            with open(PATH_TO_BOT_INFO_JSON, 'w') as write_bot_json:
+                json.dump(all_info, write_bot_json, indent=4)
 
     @tasks.loop(minutes=1)
     async def misc_updates(self):
         now = datetime.datetime.now()
         if now.hour == 21 and now.minute == 56:
-            channel = self.bot.get_channel(778101688706793472)
+            channel = self.bot.get_channel(803688097979433026)
+            # Below are the "highlights of today"
             with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\discord_bot_log.log') as file:
                 stuff = file.read()
             if len(stuff) >= 1920:
@@ -1581,6 +1721,30 @@ class Tasks(commands.Cog):
             with open(r'C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\cogs\discord_bot_log.log',
                       'w') as clear_file:
                 clear_file.write("")
+
+            os.remove(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\ping_plot.png")
+            with open(PATH_TO_BOT_INFO_JSON) as read_bot_json:
+                all_info = json.load(read_bot_json)
+                datetime_unix_list = all_info["datetime_ping"]
+                ping_list = all_info["ping_latency"]
+            datetime_list = [datetime.datetime.fromtimestamp(i) for i in datetime_unix_list]
+            plt.style.use('seaborn')
+            fig, ax = plt.subplots()
+            ax.locator_params('x', nbins=5)
+            ax.locator_params('y', nbins=10)
+            ax.plot(datetime_list, ping_list)
+            fig.autofmt_xdate()
+            ax.set_title(f"Bot Latency since "
+                         f"{datetime.datetime.fromtimestamp(sorted(datetime_unix_list)[0]).strftime(DEFAULT_DATETIME_FORMAT)}")
+            ax.set_ylabel("Ping (Milliseconds)")
+            fig.savefig('ping_plot.png')
+            plot = discord.File(r"C:\Users\Admin\AppData\Local\Programs\Python\Python38\Discord Code\Community Bot\ping_plot.png")
+            await channel.send(file=plot)
+            all_info["datetime_ping"] = []
+            all_info["ping_latency"] = []
+
+            with open(PATH_TO_BOT_INFO_JSON, 'w') as write_bot_json:
+                json.dump(all_info, write_bot_json, indent=4)
 
     @roles_update.before_loop
     async def before_roles_update(self):

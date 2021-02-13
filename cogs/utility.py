@@ -1,3 +1,7 @@
+"""
+*Essential* module which includes functions to support BuiltInCogs.py :D
+"""
+
 import json
 
 WIFI_ONLINE = 27000
@@ -32,6 +36,24 @@ def sec_to_time(seconds: float) -> tuple:
     return tuple(return_thing)
 
 
+def split_long_message(message: str):
+    split_output = []
+    lines = message.split('\n')
+    temp = ""
+
+    for line in lines:
+        if len(temp) + len(line) + 1 > 2000:
+            split_output.append(temp[:-1])
+            temp = line + '\n'
+        else:
+            temp += line + '\n'
+
+    if temp:
+        split_output.append(temp)
+
+    return split_output
+
+
 def get_json_data(fp, key_to_key=None):
     if key_to_key:
         with open(fp) as read_json:
@@ -39,3 +61,20 @@ def get_json_data(fp, key_to_key=None):
     else:
         with open(fp) as read_json:
             return json.load(read_json)
+
+
+def format_byte(size: int, decimal_places=3):
+    dec = 10 ** decimal_places
+
+    if size < 1e03:
+        return f"{int(size * dec) / dec} B"
+    if size < 1e06:
+        return f"{int(size * 1e-03 * dec) / dec} KB"
+    if size < 1e09:
+        return f"{int(size * 1e-06 * dec) / dec} MB"
+
+    return f"{int(size * 1e-09 * dec) / dec} GB"
+
+
+def send_embed(channel, stuff, color=None):
+    pass
