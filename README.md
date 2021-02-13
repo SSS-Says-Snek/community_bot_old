@@ -23,9 +23,9 @@ some files that are not on your computer. But that's fine! This is only to get a
 That's basically it! I will continue working on the bot (hopefully), and add more functionality.
 Hopefully, I can change the bot from a test bot into a real bot!
 <p>
-------------------------------------------------------------
+-----------------------------------------------------------
 <strong>INFO</strong>
-------------------------------------------------------------</p>
+-----------------------------------------------------------</p>
 VERSION: 0.6.0.b1
 <p>
 
